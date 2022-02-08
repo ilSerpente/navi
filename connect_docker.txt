@@ -1,0 +1,5 @@
+docker exec -it epic_galileo bash
+mysql -u root -p
+use users;
+
+SHOW COLUMNS FROM

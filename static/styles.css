@@ -1,0 +1,41 @@
+html { 
+  background: url(images/background.jpg) no-repeat center center fixed; 
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;
+  height: 100%;
+}
+body {
+  max-height: 100%;
+  height: 100%;
+}
+#text-first {
+  background-color: rgb(202, 202, 202);
+}
+#sign-up {
+  background-color: rgba(255, 255, 255, 0.904);
+  padding-left: 30px;
+  padding-top: 30px;
+  padding-bottom: 30px;
+  margin-left: 70%;
+  margin-top: 220px;
+  width: 200px;
+  border-radius: 5px;
+}
+.submitb{
+  margin-left: 25%;
+}
+header{
+  height: 8%;
+}
+.logo_div{
+  margin-left: 5%;
+  width: 7%;
+  margin-top: 2%;
+  display: inline-block;
+}
+.mylogo{
+  height: auto;
+  width: 100%;
+}
