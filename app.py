@@ -16,7 +16,6 @@ from flask_jwt_extended import JWTManager
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 
-# app = Flask(__name__)
 app = Flask(__name__, static_folder='../navi_interface/build')
 app.debug=True
 CORS(app)
