@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+{% extends "layout.html" %}
+
+{% block title %}
+    Dashboard
+{% endblock %}
+
+{% block main %}
+    <div class="tablediv">
+    <table>
+      <tr>
+        <th>Trucks</th>
+        </tr>
+        {% for number in number_plates %}
+        <tr>
+            <td><input id={{number}} type="checkbox">{{number}}</td>
+        </tr>
+        {% endfor %}
+        
+    </table>
+    </div>
+    {{ div_placeholder|safe }}
+{% endblock %}

@@ -7,6 +7,11 @@ __pycache__/
 *.so
 
 # Distribution / packaging
+drivers.txt
+gps_tail.txt
+truck_info.txt
+appp.py
+.mapbox_token
 .Python
 build/
 develop-eggs/

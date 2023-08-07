@@ -14,7 +14,7 @@ body {
   background-color: rgb(202, 202, 202);
 }
 #sign-up {
-  background-color: rgba(255, 255, 255, 0.904);
+  background-color: rgba(89, 89, 88);
   padding-left: 30px;
   padding-top: 30px;
   padding-bottom: 30px;
@@ -30,12 +30,40 @@ header{
   height: 8%;
 }
 .logo_div{
-  margin-left: 5%;
-  width: 7%;
-  margin-top: 2%;
-  display: inline-block;
+  position: absolute;
+  width: 4%;
+  height: 4%;
+  z-index: 9999;
 }
 .mylogo{
   height: auto;
+  width: 100%;
+}
+::placeholder{
+  color: black;
+}
+input[type=text]{
+  background-color: black;
+}
+input[type="submit"]{
+  border-radius: 5px;
+  background-color:rgb(163, 155, 155)
+}
+.tablediv{
+  height: 55%;
+  width: 10%;
+  position: absolute;
+  z-index: 9999;
+  background-color: red;
+}
+table{
+  height: 100%;
+  width: 100%;
+  display: inline-block; 
+  overflow: scroll; 
+  color: black;
+}
+.plot-container.plotly{
+  height: 100%;
   width: 100%;
 }
