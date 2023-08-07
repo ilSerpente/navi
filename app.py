@@ -79,8 +79,6 @@ def route_css(name):
     else:
         return send_from_directory(app.static_folder, 'index.html')
 
-
-
 # @app.route('/abc/<int:name>')
 # def abc(name):
 #     print(name)
