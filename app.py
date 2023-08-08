@@ -23,7 +23,7 @@ app = Flask(__name__, static_folder='../navi_interface/build')
 app.debug=True
 CORS(app)
 
-uri = "mongodb+srv://dbarannik97:qwerty123@cluster0.4qj9xmn.mongodb.net/?retryWrites=true&w=majority"
+uri = os.getenv("URL")
 client = MongoClient(uri, server_api=ServerApi('1'))
 try:
     client.admin.command('ping')
@@ -34,7 +34,7 @@ except Exception as e:
 db = client['Users_data']
 collection = db['Users']
 
-app.config["JWT_SECRET_KEY"] = "MikeWasowski"
+app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")
 jwt = JWTManager(app)
 
 app.config['MAIL_SERVER'] = 'smtp.mail.ru'
