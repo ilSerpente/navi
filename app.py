@@ -1,9 +1,20 @@
 from cgitb import reset
+from concurrent.futures import thread
 import email
 from email.policy import default
 import json
+from sqlite3 import Timestamp
+import threading
+from threading import Thread
+import time
+from types import new_class
+from unicodedata import name
 from flask import Flask, render_template, redirect, request, session, render_template_string, send_from_directory
-import mysql.connector, re, os, string, random
+import mysql.connector
+import re
+import os
+import string
+import random
 from dotenv import load_dotenv
 from flask_mail import Mail, Message
 from lattolat import all_data_reader
@@ -16,11 +27,12 @@ from flask_jwt_extended import JWTManager
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 
+from appp import data_collector
 
 
 # app = Flask(__name__)
 app = Flask(__name__, static_folder='../navi_interface/build')
-app.debug=True
+app.debug = True
 CORS(app)
 
 uri = os.getenv("URL")
@@ -47,10 +59,31 @@ mail = Mail(app)
 load_dotenv()
 app.config["SECRET_KEY"] = os.getenv('SESSION_SECRET')
 
+
+def printer():
+    global last_update_time
+    global trucks
+    last_update_time = 0
+    trucks = {}
+    while True:
+        _, trucks_obj_dict, timestamp = all_data_reader(trucks)
+        print("Printer")
+        trucks = trucks_obj_dict
+        last_update_time = timestamp
+        time.sleep(60)
+
+
+t1 = Thread(target=printer)
+t1.start()
+print(t1.is_alive())
+
+
 def email_exist_fuction(email_exist):
-    cnx = mysql.connector.connect(user='root', password='password123', host='127.0.0.1', database='users')
-    cursor = cnx.cursor(buffered=True)  
-    email_exist = ("SELECT EXISTS (SELECT user_email FROM users_list WHERE user_email = '{}')".format(request.form.get("fname")))
+    cnx = mysql.connector.connect(
+        user='root', password='password123', host='127.0.0.1', database='users')
+    cursor = cnx.cursor(buffered=True)
+    email_exist = ("SELECT EXISTS (SELECT user_email FROM users_list WHERE user_email = '{}')".format(
+        request.form.get("fname")))
     cursor.execute(email_exist)
     email_exist = cursor.fetchall()
     return(email_exist)
@@ -60,6 +93,7 @@ def email_exist_fuction(email_exist):
 #     if not session.get("user_id"):
 #         return redirect("/signup")
 #     return redirect('/dashboard')
+
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def index(path):
@@ -88,22 +122,22 @@ def route_css(name):
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
     if request.method == "POST":
-        data = request.json  
+        data = request.json
         email = data.get('email')
         password = data.get('password')
-        email_exist = collection.find_one({"user_email":email})
+        email_exist = collection.find_one({"user_email": email})
         if email_exist == None:
-            collection.insert_one({"user_email":email, "user_password": password})
+            collection.insert_one({"user_email": email, "user_password": password})
             access_token = create_access_token(identity=email)
             return jsonify(access_token=access_token), 200
         else:
             return 409
-        
+
 
 # def signup():
 #     if request.method == "POST":
 #         cnx = mysql.connector.connect(user='root', password='password123', host='127.0.0.1', database='users')
-#         cursor = cnx.cursor(buffered=True)  
+#         cursor = cnx.cursor(buffered=True)
 #         if not request.form.get("fname"):
 #             return ("No email")
 #         if not request.form.get("lname"):
@@ -123,7 +157,7 @@ def signup():
 
 #         if email_exist[0][0] == True:
 #             return("THIS E-MAIL ADDRESS IS ALREADY REGISTERED")
-        
+
 
 #         if len(password_form) < 8:
 #             print("Less than 8")
@@ -158,7 +192,7 @@ def signup():
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        data = request.json  
+        data = request.json
         email = data.get('email')
         password = data.get('password')
         if email and password != None:
@@ -168,10 +202,10 @@ def login():
         else:
             response_data = {'message': 'Invalid credentials'}
             return jsonify(response_data), 401
-            
+
     # if request.method == "POST":
     #     cnx = mysql.connector.connect(user='root', password='password123', host='127.0.0.1', database='users')
-    #     cursor = cnx.cursor(buffered=True)  
+    #     cursor = cnx.cursor(buffered=True)
     #     if not request.form.get("fname"):
     #         return ("No email")
     #     if not request.form.get("lname"):
@@ -196,19 +230,21 @@ def login():
     #     return redirect("/dashboard")
     # return render_template("/login.html")
 
+
 @app.route("/forgot_password", methods=["GET", "POST"])
 def forgot_password():
-    
+
     if request.method == "POST":
         if not request.form.get("fname"):
             return ("NO EMAIL ADDRESS ADDED")
 
-        cnx = mysql.connector.connect(user='root', password='password123', host='127.0.0.1', database='users')
-        cursor = cnx.cursor(buffered=True) 
+        cnx = mysql.connector.connect(
+            user='root', password='password123', host='127.0.0.1', database='users')
+        cursor = cnx.cursor(buffered=True)
 
         email_form = request.form.get("fname")
 
-        email_exist = email_exist_fuction(request.form.get("fname"))    
+        email_exist = email_exist_fuction(request.form.get("fname"))
 
         if email_exist[0][0] == 0:
             return("WRONG EMAIL ADDRES")
@@ -224,8 +260,9 @@ def forgot_password():
                 reset_password += random.sample(string.ascii_lowercase, 1)
 
         reset_password = "".join(reset_password)
- 
-        change_password = ("UPDATE users_list SET user_password = {} WHERE user_email = {};".format(reset_password, email_form))
+
+        change_password = ("UPDATE users_list SET user_password = {} WHERE user_email = {};".format(
+            reset_password, email_form))
 
         msg = Message()
         msg.subject = "Password reset"
@@ -237,6 +274,7 @@ def forgot_password():
 
     return render_template("/forgot_password.html")
 
+
 @app.route("/dashboard", methods=["GET"])
 def dashboard():
     if not session.get("user_id"):
@@ -246,24 +284,44 @@ def dashboard():
 
     return render_template("dashboard.html", div_placeholder=div, number_plates=number_plates)
 
+
 @app.route("/logout")
 def logout():
     session.clear()
     return redirect("/login")
 
 
+@app.route("/number/<int:timestamp>")
+def number(timestamp):
 
-@app.route("/number")
-def number():
-    trucks = all_data_reader()[1]
-    trucks_dict = {"list": []}
+    trucks_dict = {"list": {}, "timestamp": last_update_time}
 
-    for truck in trucks:
-        trucks_dict["list"].append(truck.as_dict())
+    for truck in trucks.values():
+        if truck.last_update_time > timestamp:
+            trucks_dict["list"][truck.truck_id] = truck.as_dict()
 
-    trucks_json = json.dumps(trucks_dict, indent=4)
+    # trucks_json = json.dumps(trucks_dict, indent=4)
+
+    new_dict = {}
+    for truck in trucks_dict["list"]:
+        for key in trucks_dict["list"][truck]:
+            if type(trucks_dict["list"][truck][key]) != dict:
+                if key == "lat" or key == "lon" or key == "truck_id":
+                    if truck in new_dict:
+                        new_dict[truck].update({key: trucks_dict["list"][truck][key]})
+                    else: 
+                        new_dict.update({truck : {key: trucks_dict["list"][truck][key]}})
+            else: 
+                for current_driver in trucks_dict["list"][truck][key]:
+                    if type(trucks_dict["list"][truck][key][current_driver]) == dict:
+                        new = trucks_dict["list"][truck][key][current_driver].copy()
+                        for i in new:
+                            if i == "NAME3" or i == "FIRMWARE":
+                                continue
+                            else:
+                                new_dict[truck].update({i: new[i]})
+
+    new_dict.update({"timestamp": trucks_dict["timestamp"]})
+    trucks_json = json.dumps(new_dict, indent=4)
+    
     return trucks_json
-
-
-
-

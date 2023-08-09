@@ -1,5 +1,8 @@
+from genericpath import exists
+from threading import current_thread
 import nice_math
 from appp import data_collector
+from datetime import datetime
 
 
 class Driver:
@@ -21,18 +24,35 @@ class Truck:
     truck_id: str
     lat: float
     lon: float
-    current_driver: Driver = {}
+    current_driver: Driver = None
+    gps_time: int
+    last_fetch_time: int
+    last_update_time: int
 
-    def __init__(self, stupid_format_array):
+    def __init__(self, stupid_format_array, time):
         self.truck_id = str(stupid_format_array[0])
         self.lat, self.lon = nice_math.get_position(
             stupid_format_array[4], stupid_format_array[3])
+        self.gps_time = stupid_format_array[2]
+        self.last_fetch_time = time
+        self.last_update_time = time
+
+    def update(self, stupid_format_array, time):
+        new_lat, new_lon = nice_math.get_position(
+            stupid_format_array[4], stupid_format_array[3])
+        if new_lat != self.lat and new_lon != self.lon:
+            self.last_update_time = time
+            self.lat, self.lon = new_lat, new_lon
+        self.last_fetch_time = time
 
     def __str__(self):
         return "{}, {}".format(self.get_number_plate(), self.truck_id)
 
     def as_dict(self):
-        return {"truck_id": self.truck_id, "lat": self.lat, "lon": self.lon, "current_driver": self.current_driver.__dict__}
+        if self.current_driver != None:
+            return {"truck_id": self.truck_id, "lat": self.lat, "lon": self.lon, "current_driver": self.current_driver.__dict__}
+        else: 
+            return {"truck_id": self.truck_id, "lat": self.lat, "lon": self.lon, "current_driver": "No driver"}
 
     def get_position(self):
         return (self.lat, self.lon)
@@ -50,24 +70,25 @@ class Truck:
             return "No number plate!"
 
 
-def all_data_reader():
+def all_data_reader(current_trucks: dict):
 
-    trucks_info, gps_tail, some_another_info = data_collector()
+    current_time = int(round(datetime.now().timestamp()))
+    trucks_info, gps_tail, drivers_info = data_collector()
 
-    drivers: list[Driver] = []
+    drivers: list[Driver] = {}
 
-    some_keys = some_another_info.keys()
+    some_keys = drivers_info.keys()
 
     for key in some_keys:
-        drivers.append(Driver(some_another_info[key], key))
-
-    trucks: list[Truck] = []
+        drivers[key] = Driver(drivers_info[key], key)
 
     for truck_info in trucks_info:
-        trucks.append(Truck(truck_info))
+        key = truck_info[0]
+        if key in current_trucks:
+            current_trucks[key].update(truck_info, current_time)
+        else:
+            current_trucks[key] = Truck(truck_info, current_time)
+            if str(key) in drivers:
+                current_trucks[key].set_current_driver(drivers[str(key)])
 
-    for driver in drivers:
-        for i in range(len(trucks)):
-            if trucks[i].truck_id == driver.truck_id:
-                trucks[i].set_current_driver(driver)
-    return drivers, trucks
+    return drivers, current_trucks, current_time
