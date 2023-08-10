@@ -50,7 +50,7 @@ class Truck:
 
     def as_dict(self):
         if self.current_driver != None:
-            return {"truck_id": self.truck_id, "lat": self.lat, "lon": self.lon, "current_driver": self.current_driver.__dict__}
+            return {"truck_id": self.truck_id, "lat": self.lat, "lon": self.lon, "NAME1": self.current_driver.raw["NAME1"], "NAME2": self.current_driver.raw["NAME2"]}
         else: 
             return {"truck_id": self.truck_id, "lat": self.lat, "lon": self.lon, "current_driver": "No driver"}
 

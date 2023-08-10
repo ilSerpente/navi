@@ -88,11 +88,6 @@ def email_exist_fuction(email_exist):
     email_exist = cursor.fetchall()
     return(email_exist)
 
-# @app.route("/")
-# def index():
-#     if not session.get("user_id"):
-#         return redirect("/signup")
-#     return redirect('/dashboard')
 
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
@@ -134,61 +129,6 @@ def signup():
             return 409
 
 
-# def signup():
-#     if request.method == "POST":
-#         cnx = mysql.connector.connect(user='root', password='password123', host='127.0.0.1', database='users')
-#         cursor = cnx.cursor(buffered=True)
-#         if not request.form.get("fname"):
-#             return ("No email")
-#         if not request.form.get("lname"):
-#             return("NO PASSWORD")
-
-#         email_form = request.form.get("fname")
-#         password_form = request.form.get("lname")
-
-#         regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
-
-#         if (re.fullmatch(regex, email_form)):
-#             print("Valid Email")
-#         else:
-#             return("Invalid Email")
-
-#         email_exist = email_exist_fuction(request.form.get("fname"))
-
-#         if email_exist[0][0] == True:
-#             return("THIS E-MAIL ADDRESS IS ALREADY REGISTERED")
-
-
-#         if len(password_form) < 8:
-#             print("Less than 8")
-#         uppercase = 0
-#         lowercase = 0
-#         numeric = 0
-#         for i in password_form:
-#             if i.isupper():
-#                 uppercase += 1
-#                 print(i, "upper")
-#             elif i.islower():
-#                 lowercase += 1
-#                 print(i, "low")
-#             elif i.isnumeric():
-#                 numeric += 1
-#                 print(i, "number")
-#         if uppercase < 2:
-#             return("Password should contain at least 2 letters in uppercase")
-#         elif lowercase < 3:
-#             return("Password should contain at least 3 letters in lowercase")
-#         elif numeric < 3:
-#             return("Password should contain at least 3 numbers")
-
-
-#         signup_push = ("INSERT INTO users_list (user_email, user_password)" "VALUES (%s, %s)")
-#         user_data = (email_form, password_form)
-#         cursor.execute(signup_push, user_data)
-#         cnx.commit()
-#         return redirect("/dashboard")
-#     return render_template("signup.html")
-
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
@@ -202,33 +142,6 @@ def login():
         else:
             response_data = {'message': 'Invalid credentials'}
             return jsonify(response_data), 401
-
-    # if request.method == "POST":
-    #     cnx = mysql.connector.connect(user='root', password='password123', host='127.0.0.1', database='users')
-    #     cursor = cnx.cursor(buffered=True)
-    #     if not request.form.get("fname"):
-    #         return ("No email")
-    #     if not request.form.get("lname"):
-    #         return("NO PASSWORD")
-
-    #     email_form = request.form.get("fname")
-    #     password_form = request.form.get("lname")
-
-    #     email_exist = email_exist_fuction(request.form.get("fname"))
-
-    #     if email_exist[0][0] == False:
-    #         return("THIS E-MAIL ADDRESS IS NOT REGISTERED")
-
-    #     password_match = ("SELECT user_password, user_id FROM users_list WHERE user_email = '{}'".format(email_form))
-    #     cursor.execute(password_match)
-    #     password_match = cursor.fetchall()
-
-    #     if password_form != password_match[0][0]:
-    #         return("WRONG PASSWORD")
-
-    #     session["user_id"] = password_match[0][1]
-    #     return redirect("/dashboard")
-    # return render_template("/login.html")
 
 
 @app.route("/forgot_password", methods=["GET", "POST"])
@@ -300,28 +213,5 @@ def number(timestamp):
         if truck.last_update_time > timestamp:
             trucks_dict["list"][truck.truck_id] = truck.as_dict()
 
-    # trucks_json = json.dumps(trucks_dict, indent=4)
-
-    new_dict = {}
-    for truck in trucks_dict["list"]:
-        for key in trucks_dict["list"][truck]:
-            if type(trucks_dict["list"][truck][key]) != dict:
-                if key == "lat" or key == "lon" or key == "truck_id":
-                    if truck in new_dict:
-                        new_dict[truck].update({key: trucks_dict["list"][truck][key]})
-                    else: 
-                        new_dict.update({truck : {key: trucks_dict["list"][truck][key]}})
-            else: 
-                for current_driver in trucks_dict["list"][truck][key]:
-                    if type(trucks_dict["list"][truck][key][current_driver]) == dict:
-                        new = trucks_dict["list"][truck][key][current_driver].copy()
-                        for i in new:
-                            if i == "NAME3" or i == "FIRMWARE":
-                                continue
-                            else:
-                                new_dict[truck].update({i: new[i]})
-
-    new_dict.update({"timestamp": trucks_dict["timestamp"]})
-    trucks_json = json.dumps(new_dict, indent=4)
-    
+    trucks_json = json.dumps(trucks_dict, indent=4)
     return trucks_json
