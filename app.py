@@ -70,7 +70,7 @@ def printer():
         print("Printer")
         trucks = trucks_obj_dict
         last_update_time = timestamp
-        time.sleep(60)
+        time.sleep(10)
 
 
 t1 = Thread(target=printer)
